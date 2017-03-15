@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import Storage.Cell;
 import Storage.Generation;
@@ -15,19 +17,44 @@ public class Deserialization
 		File folder = new File(path);
 		File[] files = folder.listFiles();
 		ArrayList<ArrayList<String>> des = new ArrayList<ArrayList<String>>();
+		ArrayList<File> ffiles = new ArrayList<File>();
+		for(File ff : files)
+		{
+			if(ff.getName().matches("\\d+"))
+			{
+				ffiles.add(ff);
+			}
+		}
+		files = new File[ffiles.size()];
+		for(int i = 0; i < files.length; i++)
+		{
+			files[i] = ffiles.get(i);
+		}
+		
+		Arrays.sort(files, new Comparator<File>() {
+		    public int compare(File f1, File f2) {
+		        try {
+		            int i1 = Integer.parseInt(numOnly(f1.getName()));
+		            int i2 = Integer.parseInt(numOnly(f2.getName()));
+		            return i1 - i2;
+		        } catch(NumberFormatException e) {
+		            throw new AssertionError(e);
+		        }
+		    }
+		});
+		
+		
 		for (File ff : files)
 		{
-			if (ff.getPath().endsWith(".ser"))
+			System.out.println(""+ff.getName());
+			try
 			{
-				try
-				{
-					FileInputStream fis = new FileInputStream(ff);
-					ObjectInputStream ois = new ObjectInputStream(fis);
-					des.add((ArrayList) ois.readObject());
-				} catch (Exception e)
-				{
-					e.printStackTrace();
-				}
+				FileInputStream fis = new FileInputStream(ff);
+				ObjectInputStream ois = new ObjectInputStream(fis);
+				des.add((ArrayList) ois.readObject());
+			} catch (Exception e)
+			{
+				e.printStackTrace();
 			}
 		}
 		return des;
@@ -48,5 +75,10 @@ public class Deserialization
 		}
 		
 		return gens;
+	}
+	
+	private String numOnly(String name)
+	{
+		return name.replaceAll("[^\\d]", "");
 	}
 }
